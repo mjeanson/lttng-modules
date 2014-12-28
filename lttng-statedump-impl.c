@@ -57,6 +57,7 @@
 #include "wrapper/tracepoint.h"
 #include "wrapper/genhd.h"
 #include "wrapper/time.h"
+#include "wrapper/file.h"
 
 #ifdef CONFIG_LTTNG_HAS_LIST_IRQ
 #include <linux/irq.h>
@@ -315,7 +316,7 @@ void lttng_enumerate_task_vm_maps(struct lttng_session *session,
 		down_read(&mm->mmap_sem);
 		while (map) {
 			if (map->vm_file)
-				ino = map->vm_file->f_dentry->d_inode->i_ino;
+				ino = map->vm_file->lttng_f_dentry->d_inode->i_ino;
 			else
 				ino = 0;
 			trace_lttng_statedump_vm_map(session, p, map, ino);
