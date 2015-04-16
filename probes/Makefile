@@ -177,14 +177,16 @@ CFLAGS_lttng-probe-printk.o += -Wframe-larger-than=2200
 endif
 
 obj-m +=  $(shell \
-	if [ \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 6 \) \
+	if [ $(VERSION) -ge 4 \
+		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 6 \) \
 		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 5 -a $(SUBLEVEL) -ge 2 \) \
 		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 4 -a $(SUBLEVEL) -ge 9 \) \
 		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 0 -a $(SUBLEVEL) -ge 41 \) ] ; then \
 		echo "lttng-probe-random.o" ; fi;)
 
 obj-m +=  $(shell \
-	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 2 ] ; then \
+	if [ $(VERSION) -ge 4 \
+		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 2 \) ] ; then \
 		echo "lttng-probe-rcu.o" ; fi;)
 
 ifneq ($(CONFIG_REGMAP),)
@@ -198,13 +200,15 @@ endif
 
 ifneq ($(CONFIG_PM_RUNTIME),)
 obj-m +=  $(shell \
-	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 2 ] ; then \
+	if [ $(VERSION) -ge 4 \
+		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 2 \) ] ; then \
 		echo "lttng-probe-rpm.o" ; fi;)
 endif
 
 ifneq ($(CONFIG_SUNRPC),)
 obj-m +=  $(shell \
-	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 4 ] ; then \
+	if [ $(VERSION) -ge 4 \
+		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 4 \) ] ; then \
 		echo "lttng-probe-sunrpc.o" ; fi;)
 endif
 
