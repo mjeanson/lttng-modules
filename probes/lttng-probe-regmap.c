@@ -29,7 +29,10 @@
  * Create the tracepoint static inlines from the kernel to validate that our
  * trace event macros match the kernel we run on.
  */
-#include <trace/events/regmap.h>
+#include <../../drivers/base/regmap/trace.h>
+
+#undef TRACE_INCLUDE_PATH
+#undef TRACE_INCLUDE_FILE
 
 /*
  * Create LTTng tracepoint probes.
