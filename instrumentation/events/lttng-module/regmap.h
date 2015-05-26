@@ -59,7 +59,6 @@ DEFINE_EVENT(regmap_reg, regmap_reg_read,
 
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
 DEFINE_EVENT(regmap_reg, regmap_reg_read_cache,
 
 	TP_PROTO(struct device *dev, unsigned int reg,
@@ -68,7 +67,6 @@ DEFINE_EVENT(regmap_reg, regmap_reg_read_cache,
 	TP_ARGS(dev, reg, val)
 
 )
-#endif
 
 DECLARE_EVENT_CLASS(regmap_block,
 
@@ -144,7 +142,6 @@ TRACE_EVENT(regcache_sync,
 		  __get_str(type), __get_str(status))
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 DECLARE_EVENT_CLASS(regmap_bool,
 
 	TP_PROTO(struct device *dev, bool flag),
@@ -180,7 +177,6 @@ DEFINE_EVENT(regmap_bool, regmap_cache_bypass,
 	TP_ARGS(dev, flag)
 
 )
-#endif
 
 #endif /* _TRACE_REGMAP_H */
 
