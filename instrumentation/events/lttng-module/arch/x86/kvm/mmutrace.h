@@ -2,7 +2,13 @@
 #define _TRACE_KVMMMU_H
 
 #include <linux/tracepoint.h>
+#include <linux/version.h>
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
+#include <linux/trace_events.h>
+#else /* if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
 #include <linux/ftrace_event.h>
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
 
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM kvmmmu
