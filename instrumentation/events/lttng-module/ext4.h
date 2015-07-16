@@ -1511,6 +1511,41 @@ TRACE_EVENT(ext4_da_update_reserve_space,
 #endif
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
+TRACE_EVENT(ext4_da_reserve_space,
+	TP_PROTO(struct inode *inode),
+
+	TP_ARGS(inode),
+
+	TP_STRUCT__entry(
+		__field(	dev_t,	dev			)
+		__field(	ino_t,	ino			)
+		__field(	__u64,	i_blocks		)
+		__field(	int,	reserved_data_blocks	)
+		__field(	int,	reserved_meta_blocks	)
+		__field(	TP_MODE_T, mode			)
+	),
+
+	TP_fast_assign(
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(i_blocks, inode->i_blocks)
+		tp_assign(reserved_data_blocks,
+				EXT4_I(inode)->i_reserved_data_blocks)
+		tp_assign(reserved_meta_blocks,
+				EXT4_I(inode)->i_reserved_meta_blocks)
+		tp_assign(mode, inode->i_mode)
+	),
+
+	TP_printk("dev %d,%d ino %lu mode 0%o i_blocks %llu"
+		  "reserved_data_blocks %d reserved_meta_blocks %d",
+		  MAJOR(__entry->dev), MINOR(__entry->dev),
+		  (unsigned long) __entry->ino,
+		  __entry->mode, __entry->i_blocks,
+		  __entry->reserved_data_blocks,
+		  __entry->reserved_meta_blocks)
+)
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
 TRACE_EVENT(ext4_da_reserve_space,
 	TP_PROTO(struct inode *inode, int md_needed),
 
@@ -1546,6 +1581,7 @@ TRACE_EVENT(ext4_da_reserve_space,
 		  __entry->md_needed, __entry->reserved_data_blocks,
 		  __entry->reserved_meta_blocks)
 )
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
 
 TRACE_EVENT(ext4_da_release_space,
 	TP_PROTO(struct inode *inode, int freed_blocks),
