@@ -292,7 +292,7 @@ DEFINE_EVENT_PRINT(mm_page, mm_page_pcpu_drain,
 	|| LTTNG_UBUNTU_KERNEL_RANGE(3,13,11,50, 3,14,0,0)	\
 	|| LTTNG_UBUNTU_KERNEL_RANGE(3,16,7,38, 3,17,0,0))
 
-LTTNG_TRACEPOINT_EVENT(mm_page_alloc_extfrag,
+TRACE_EVENT(mm_page_alloc_extfrag,
 
 	TP_PROTO(struct page *page,
 		int alloc_order, int fallback_order,
@@ -335,7 +335,7 @@ LTTNG_TRACEPOINT_EVENT(mm_page_alloc_extfrag,
 
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,30))
 
-LTTNG_TRACEPOINT_EVENT(mm_page_alloc_extfrag,
+TRACE_EVENT(mm_page_alloc_extfrag,
 
 	TP_PROTO(struct page *page,
 		int alloc_order, int fallback_order,
