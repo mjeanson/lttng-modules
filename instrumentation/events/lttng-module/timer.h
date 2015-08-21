@@ -10,6 +10,7 @@
 #define _TRACE_TIMER_DEF_
 #include <linux/hrtimer.h>
 #include <linux/timer.h>
+#include <linux/version.h>
 
 struct timer_list;
 
@@ -43,6 +44,41 @@ DEFINE_EVENT(timer_class, timer_init,
 	TP_ARGS(timer)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
+/**
+ * timer_start - called when the timer is started
+ * @timer:	pointer to struct timer_list
+ * @expires:	the timers expiry time
+ * @flags:	the timers expiry time
+ */
+TRACE_EVENT(timer_start,
+
+	TP_PROTO(struct timer_list *timer, unsigned long expires,
+		unsigned int flags),
+
+	TP_ARGS(timer, expires, flags),
+
+	TP_STRUCT__entry(
+		__field( void *,	timer		)
+		__field( void *,	function	)
+		__field( unsigned long,	expires		)
+		__field( unsigned long,	now		)
+		__field( unsigned int,	flags		)
+	),
+
+	TP_fast_assign(
+		tp_assign(timer, timer)
+		tp_assign(function, timer->function)
+		tp_assign(expires, expires)
+		tp_assign(now, jiffies)
+		tp_assign(flags, flags)
+	),
+
+	TP_printk("timer=%p function=%pf expires=%lu flags=%u [timeout=%ld]",
+		  __entry->timer, __entry->function, __entry->expires,
+		  __entry->flags, (long)__entry->expires - __entry->now)
+)
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
 /**
  * timer_start - called when the timer is started
  * @timer:	pointer to struct timer_list
@@ -72,6 +108,7 @@ TRACE_EVENT(timer_start,
 		  __entry->timer, __entry->function, __entry->expires,
 		  (long)__entry->expires - __entry->now)
 )
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
 
 /**
  * timer_expire_entry - called immediately before the timer callback
