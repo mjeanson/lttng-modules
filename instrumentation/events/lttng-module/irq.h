@@ -12,6 +12,7 @@
 struct irqaction;
 struct softirq_action;
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
 #define softirq_name(sirq) { sirq##_SOFTIRQ, #sirq }
 #define show_softirq_name(val)				\
 	__print_symbolic(val,				\
@@ -25,6 +26,7 @@ struct softirq_action;
 			 softirq_name(SCHED),		\
 			 softirq_name(HRTIMER),		\
 			 softirq_name(RCU))
+#endif
 
 #endif /* _TRACE_IRQ_DEF_ */
 
