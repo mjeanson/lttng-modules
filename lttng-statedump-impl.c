@@ -52,7 +52,7 @@
 #include <wrapper/irqdesc.h>
 #include <wrapper/spinlock.h>
 #include <wrapper/fdtable.h>
-#include <wrapper/nsproxy.h>
+#include <wrapper/namespace.h>
 #include <wrapper/irq.h>
 #include <wrapper/tracepoint.h>
 #include <wrapper/genhd.h>
@@ -76,6 +76,13 @@ DEFINE_TRACE(lttng_statedump_interrupt);
 DEFINE_TRACE(lttng_statedump_file_descriptor);
 DEFINE_TRACE(lttng_statedump_start);
 DEFINE_TRACE(lttng_statedump_process_state);
+DEFINE_TRACE(lttng_statedump_process_pid_ns);
+DEFINE_TRACE(lttng_statedump_process_cgroup_ns);
+DEFINE_TRACE(lttng_statedump_process_ipc_ns);
+//DEFINE_TRACE(lttng_statedump_process_mnt_ns);
+DEFINE_TRACE(lttng_statedump_process_net_ns);
+DEFINE_TRACE(lttng_statedump_process_user_ns);
+DEFINE_TRACE(lttng_statedump_process_uts_ns);
 DEFINE_TRACE(lttng_statedump_network_interface);
 
 struct lttng_fd_ctx {
@@ -394,6 +401,25 @@ void lttng_statedump_process_ns(struct lttng_session *session,
 {
 	struct nsproxy *proxy;
 	struct pid_namespace *pid_ns;
+	struct user_namespace *user_ns;
+
+	/*
+	 * The pid and user namespaces are special, they are nested and
+	 * accessed with specific functions instead of the nsproxy struct
+	 * like the other namespaces.
+	 */
+	pid_ns = task_active_pid_ns(p);
+	do {
+		trace_lttng_statedump_process_pid_ns(session, p, pid_ns);
+		pid_ns = pid_ns->parent;
+	} while (pid_ns);
+
+
+	user_ns = task_cred_xxx(p, user_ns);
+	do {
+		trace_lttng_statedump_process_user_ns(session, p, user_ns);
+		user_ns = user_ns->parent;
+	} while (user_ns);
 
 	/*
 	 * Back and forth on locking strategy within Linux upstream for nsproxy.
@@ -411,15 +437,21 @@ void lttng_statedump_process_ns(struct lttng_session *session,
 	proxy = task_nsproxy(p);
 #endif
 	if (proxy) {
-		pid_ns = lttng_get_proxy_pid_ns(proxy);
-		do {
-			trace_lttng_statedump_process_state(session,
-				p, type, mode, submode, status, pid_ns);
-			pid_ns = pid_ns->parent;
-		} while (pid_ns);
+		/*
+		 * One event per namespace? cgroup, ipc, mnt, net, uts
+		 */
+		trace_lttng_statedump_process_cgroup_ns(session, p, proxy->cgroup_ns);
+		trace_lttng_statedump_process_ipc_ns(session, p, proxy->ipc_ns);
+		//trace_lttng_statedump_process_mnt_ns(session, p, proxy->mnt_ns);
+		trace_lttng_statedump_process_net_ns(session, p, proxy->net_ns);
+		trace_lttng_statedump_process_uts_ns(session, p, proxy->uts_ns);
 	} else {
-		trace_lttng_statedump_process_state(session,
-			p, type, mode, submode, status, NULL);
+		/* NULL events, or no events? */
+		trace_lttng_statedump_process_cgroup_ns(session, p, NULL);
+		trace_lttng_statedump_process_ipc_ns(session, p, NULL);
+		//trace_lttng_statedump_process_mnt_ns(session, p, NULL);
+		trace_lttng_statedump_process_net_ns(session, p, NULL);
+		trace_lttng_statedump_process_uts_ns(session, p, NULL);
 	}
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0) || \
 		LTTNG_UBUNTU_KERNEL_RANGE(3,13,11,36, 3,14,0,0) || \
@@ -480,6 +512,15 @@ int lttng_enumerate_process_states(struct lttng_session *session)
 				type = LTTNG_USER_THREAD;
 			else
 				type = LTTNG_KERNEL_THREAD;
+
+			/*
+			 *
+			 */
+			trace_lttng_statedump_process_state(session,
+				p, type, mode, submode, status);
+			/*
+			 *
+			 */
 			lttng_statedump_process_ns(session,
 				p, type, mode, submode, status);
 			task_unlock(p);

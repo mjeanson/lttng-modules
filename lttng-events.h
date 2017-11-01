@@ -702,6 +702,21 @@ int lttng_add_migratable_to_ctx(struct lttng_ctx **ctx)
 	return -ENOSYS;
 }
 #endif
+int lttng_add_cgroup_ns_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_ipc_ns_to_ctx(struct lttng_ctx **ctx);
+#if defined(LTTNG_MNT_NS_MISSING_HEADER)
+static inline
+int lttng_add_mnt_ns_to_ctx(struct lttng_ctx **ctx)
+{
+	return -ENOSYS;
+}
+#else
+int lttng_add_mnt_ns_to_ctx(struct lttng_ctx **ctx);
+#endif
+int lttng_add_net_ns_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_pid_ns_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_user_ns_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_uts_ns_to_ctx(struct lttng_ctx **ctx);
 #if defined(CONFIG_PERF_EVENTS) && (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33))
 int lttng_add_perf_counter_to_ctx(uint32_t type,
 				  uint64_t config,

@@ -50,6 +50,12 @@ ifneq ($(KERNELRELEASE),)
                        lttng-context-vpid.o lttng-context-tid.o \
                        lttng-context-vtid.o lttng-context-ppid.o \
                        lttng-context-vppid.o lttng-context-cpu-id.o \
+                       lttng-context-net-ns.o \
+                       lttng-context-cgroup-ns.o \
+                       lttng-context-ipc-ns.o \
+                       lttng-context-pid-ns.o \
+                       lttng-context-user-ns.o \
+                       lttng-context-uts-ns.o \
                        lttng-context-interruptible.o \
                        lttng-context-need-reschedule.o lttng-calibrate.o \
                        lttng-context-hostname.o wrapper/random.o \
@@ -79,6 +85,10 @@ ifneq ($(KERNELRELEASE),)
 
   ifneq ($(CONFIG_PREEMPT),)
     lttng-tracer-objs += lttng-context-preemptible.o
+  endif
+
+  ifneq ($(wildcard $(mnt_ns_dep)),)
+     lttng-tracer-objs += lttng-context-mnt-ns.o
   endif
 
   lttng-tracer-objs += $(shell \

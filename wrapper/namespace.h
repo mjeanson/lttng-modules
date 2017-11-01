@@ -1,10 +1,11 @@
-#ifndef _LTTNG_WRAPPER_NSPROXY_H
-#define _LTTNG_WRAPPER_NSPROXY_H
+#ifndef _LTTNG_WRAPPER_NAMESPACE_H
+#define _LTTNG_WRAPPER_NAMESPACE_H
 
 /*
  * wrapper/nsproxy.h
  *
  * Copyright (C) 2011-2012 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+ *               2017 Michael Jeanson <mjeanson@efficios.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,21 +23,11 @@
  */
 
 #include <linux/version.h>
-#include <linux/nsproxy.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
-static inline
-struct pid_namespace *lttng_get_proxy_pid_ns(struct nsproxy *proxy)
-{
-	return proxy->pid_ns_for_children;
-}
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
+#define lttng_ns_inum ns.inum
 #else
-static inline
-struct pid_namespace *lttng_get_proxy_pid_ns(struct nsproxy *proxy)
-{
-	return proxy->pid_ns;
-}
+#define lttng_ns_inum proc_inum
 #endif
 
-
-#endif /* _LTTNG_WRAPPER_NSPROXY_H */
+#endif /* _LTTNG_WRAPPER_NAMESPACE_H */
