@@ -58,6 +58,7 @@
 #include <wrapper/genhd.h>
 #include <wrapper/file.h>
 #include <wrapper/time.h>
+#include <wrapper/get-cmdline.h>
 
 #ifdef CONFIG_LTTNG_HAS_LIST_IRQ
 #include <linux/irq.h>
@@ -84,6 +85,7 @@ DEFINE_TRACE(lttng_statedump_process_net_ns);
 DEFINE_TRACE(lttng_statedump_process_user_ns);
 DEFINE_TRACE(lttng_statedump_process_uts_ns);
 DEFINE_TRACE(lttng_statedump_network_interface);
+DEFINE_TRACE(lttng_statedump_container);
 
 struct lttng_fd_ctx {
 	char *page;
@@ -389,6 +391,66 @@ int lttng_list_interrupts(struct lttng_session *session)
 #endif
 
 /*
+ * This is the worst kernel code ever written,
+ * you've been warned.
+ */
+static
+void lttng_lxd(struct lttng_session *session,
+                  struct task_struct *p,
+		  enum lttng_thread_type type)
+{
+	if (type != LTTNG_USER_THREAD)
+		return;
+
+	/*
+	 * Find the lxd processes
+	 */
+	if (strncmp(p->comm, "lxd", 3) == 0) {
+		int res;
+		char *buf;
+		char container_type[] = "lxd";
+		char container_name[17];
+
+		/*
+		 * Grab the cmdline from the process memory
+		 */
+		buf = lttng_kvmalloc(PAGE_SIZE, GFP_KERNEL);
+		if (!buf)
+			return;
+
+		res = wrapper_get_cmdline(p, buf, PAGE_SIZE);
+		if (res == 0 ) {
+			lttng_kvfree(buf);
+			return;
+		}
+		buf[PAGE_SIZE - 1] = '\0';
+
+		/*
+		 * Find the lxc monitor processes and extract the container name from the cmdline
+		 */
+		if (sscanf(buf, "[lxc monitor] /var/lib/lxd/containers %16s\n", container_name) == 1) {
+			struct task_struct *child;
+
+			/*
+			 * Get the first children which is the container init
+			 */
+			task_lock(p);
+			child = list_first_entry(&p->children, struct task_struct, sibling);
+			task_unlock(p);
+
+			/*
+			 * Dump the container name and it's pid and user namespace
+			 */
+			task_lock(child);
+			trace_lttng_statedump_container(session, container_type, container_name, task_active_pid_ns(child), task_cred_xxx(child, user_ns));
+			task_unlock(child);
+		}
+
+		lttng_kvfree(buf);
+	}
+}
+
+/*
  * Called with task lock held.
  */
 static
@@ -524,6 +586,11 @@ int lttng_enumerate_process_states(struct lttng_session *session)
 			lttng_statedump_process_ns(session,
 				p, type, mode, submode, status);
 			task_unlock(p);
+
+			/*
+			 * After task_unlock()
+			 */
+			//lttng_lxd(session, p, type);
 		} while_each_thread(g, p);
 	}
 	rcu_read_unlock();

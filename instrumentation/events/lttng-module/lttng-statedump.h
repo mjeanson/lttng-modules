@@ -165,6 +165,23 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_uts_ns,
 	)
 )
 
+LTTNG_TRACEPOINT_EVENT(lttng_statedump_container,
+	TP_PROTO(struct lttng_session *session,
+		char *container_type,
+		char *container_name,
+		struct pid_namespace *pid_ns,
+		struct user_namespace *user_ns),
+	TP_ARGS(session, container_type, container_name, pid_ns, user_ns),
+	TP_FIELDS(
+		ctf_array_text(char, container_type, container_type, 17)
+		ctf_array_text(char, container_name, container_name, 17)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+		ctf_integer(unsigned int, pid_ns, pid_ns ? pid_ns->lttng_ns_inum : 0)
+		ctf_integer(unsigned int, user_ns, user_ns ? user_ns->lttng_ns_inum : 0)
+#endif
+	)
+)
+
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_file_descriptor,
 	TP_PROTO(struct lttng_session *session,
 		struct task_struct *p, int fd, const char *filename,
