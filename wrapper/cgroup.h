@@ -59,9 +59,9 @@ struct list_head* wrapper_get_cgroup_roots(void)
 }
 
 static inline
-struct cgroup_subsys* wrapper_get_cgroup_subsys(void)
+struct cgroup_subsys** wrapper_get_cgroup_subsys(void)
 {
-	return (struct cgroup_subsys*) kallsyms_lookup_dataptr("cgroup_subsys");
+	return (struct cgroup_subsys**) kallsyms_lookup_dataptr("cgroup_subsys");
 }
 
 #endif

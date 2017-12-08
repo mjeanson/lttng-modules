@@ -500,7 +500,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 	char *buf;
 	bool cgrp_dfl_visible;
 	struct list_head cgroup_roots;
-	struct cgroup_subsys *cgroup_subsys;
+	struct cgroup_subsys **cgroup_subsys;
 
 	buf = kmalloc(PATH_MAX, GFP_KERNEL);
 	if (!buf)
