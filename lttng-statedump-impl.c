@@ -515,22 +515,27 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 	printk(KERN_INFO "LTTng cgroups: Holding locks...\n");*/
 
 	list_for_each_entry((root), cgroup_roots_ptr, root_list) {
-		struct cgroup_subsys *ss;
-		int ssid, count = 0;
 
 		if (root == &cgrp_dfl_root && !cgrp_dfl_visible)
 			continue;
 
-		printk(KERN_INFO "%d:", root->hierarchy_id);
-		if (root != &cgrp_dfl_root)
-			for_each_subsys(ss, ssid)
-				if (root->subsys_mask & (1 << ssid))
-					printk(KERN_INFO "%s%s", count++ ? "," : "",
-						   ss->legacy_name);
+		printk(KERN_INFO "Hierarchy ID %d:", root->hierarchy_id);
+		if (root != &cgrp_dfl_root) {
+			struct cgroup *cgrp;
+			struct cgroup_subsys_state *d_css;
+			struct cgroup *dsct;
+			
+			cgrp = &(root->cgrp);
+
+			cgroup_for_each_live_descendant_pre(dsct, d_css, cgrp) {
+				cgroup_path(dsct, buf, PATH_MAX);
+				printk(KERN_INFO "child %s", buf);
+			}
+		}
+			
 		if (strlen(root->name))
 			printk(KERN_INFO "%sname=%s", count ? "," : "",
 				   root->name);
-		printk(KERN_INFO "\n");
 	}
 
 	/*printk(KERN_INFO "LTTng cgroups: Releasing locks...\n");
