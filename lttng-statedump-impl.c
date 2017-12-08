@@ -46,9 +46,12 @@
 #include <linux/wait.h>
 #include <linux/mutex.h>
 #include <linux/device.h>
+#include <linux/cgroup.h>
+#include <../kernel/cgroup/cgroup-internal.h>
 
 #include <lttng-events.h>
 #include <lttng-tracer.h>
+#include <wrapper/cgroup.h>
 #include <wrapper/irqdesc.h>
 #include <wrapper/spinlock.h>
 #include <wrapper/fdtable.h>
@@ -491,6 +494,49 @@ int lttng_enumerate_process_states(struct lttng_session *session)
 }
 
 static
+int lttng_enumerate_cgroups_states(struct lttng_session *session)
+{
+	struct cgroup_root *root;
+	char *buf;
+	bool cgrp_dfl_visible;
+
+	buf = kmalloc(PATH_MAX, GFP_KERNEL);
+	if (!buf)
+		return -1;
+
+	cgrp_dfl_visible = wrapper_get_cgrp_dfl_visible();
+
+	mutex_lock(&cgroup_mutex);
+	spin_lock_irq(&css_set_lock);
+	printk(KERN_INFO "LTTng cgroups: Holding locks...\n");
+	for_each_root(root) {
+		struct cgroup_subsys *ss;
+		int ssid, count = 0;
+
+		if (root == &cgrp_dfl_root && !cgrp_dfl_visible)
+			continue;
+
+		printk(KERN_INFO "%d:", root->hierarchy_id);
+		if (root != &cgrp_dfl_root)
+			for_each_subsys(ss, ssid)
+				if (root->subsys_mask & (1 << ssid))
+					printk(KERN_INFO "%s%s", count++ ? "," : "",
+						   ss->legacy_name);
+		if (strlen(root->name))
+			printk(KERN_INFO "%sname=%s", count ? "," : "",
+				   root->name);
+		printk(KERN_INFO "\n");
+	}
+
+	printk(KERN_INFO "LTTng cgroups: Releasing locks...\n");
+	spin_unlock_irq(&css_set_lock);
+	mutex_unlock(&cgroup_mutex);
+	printk(KERN_INFO "LTTng cgroups: Locks released\n");
+
+	return 0;
+}
+
+static
 void lttng_statedump_work_func(struct work_struct *work)
 {
 	if (atomic_dec_and_test(&kernel_threads_to_run))
@@ -532,6 +578,10 @@ int do_lttng_statedump(struct lttng_session *session)
 	default:
 		return ret;
 	}
+
+	ret = lttng_enumerate_cgroups_states(session);
+	if (ret)
+		return ret;
 
 	/* TODO lttng_dump_idt_table(session); */
 	/* TODO lttng_dump_softirq_vec(session); */
