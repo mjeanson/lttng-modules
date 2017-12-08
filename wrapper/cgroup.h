@@ -47,9 +47,9 @@ char *wrapper_disk_name(struct gendisk *hd, int partno, char *buf)
 } */
 
 static inline
-bool wrapper_get_cgrp_dfl_visible(void)
+bool* wrapper_get_cgrp_dfl_visible(void)
 {
-	return (bool) kallsyms_lookup_dataptr("cgrp_dfl_visible");
+	return (bool*) kallsyms_lookup_dataptr("cgrp_dfl_visible");
 }
 
 static inline
