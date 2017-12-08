@@ -534,8 +534,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 		}
 			
 		if (strlen(root->name))
-			printk(KERN_INFO "%sname=%s", count ? "," : "",
-				   root->name);
+			printk(KERN_INFO "%sname=%s", root->name);
 	}
 
 	/*printk(KERN_INFO "LTTng cgroups: Releasing locks...\n");
