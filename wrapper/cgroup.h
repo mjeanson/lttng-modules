@@ -53,9 +53,9 @@ bool wrapper_get_cgrp_dfl_visible(void)
 }
 
 static inline
-struct list_head wrapper_get_cgroup_roots(void)
+struct list_head* wrapper_get_cgroup_roots(void)
 {
-	return (struct list_head) kallsyms_lookup_dataptr("cgroup_roots");
+	return (struct list_head*) kallsyms_lookup_dataptr("cgroup_roots");
 }
 
 static inline
