@@ -506,7 +506,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 	if (!buf)
 		return -1;
 
-	cgrp_dfl_visible = wrapper_get_cgrp_dfl_visible();
+	cgrp_dfl_visible = *wrapper_get_cgrp_dfl_visible();
 	cgroup_roots_ptr = wrapper_get_cgroup_roots();
 	cgroup_subsys = wrapper_get_cgroup_subsys();
 
@@ -515,11 +515,8 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 	printk(KERN_INFO "LTTng cgroups: Holding locks...\n");*/
 
 	list_for_each_entry((root), cgroup_roots_ptr, root_list) {
-		printk(KERN_INFO "LTTng cgroups: ok we're iterating guys...\n");		
-		/*struct cgroup_subsys *ss;
+		struct cgroup_subsys *ss;
 		int ssid, count = 0;
-
-		printk(KERN_INFO "LTTng cgroups: ok\n");
 
 		if (root == &cgrp_dfl_root && !cgrp_dfl_visible)
 			continue;
@@ -533,7 +530,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 		if (strlen(root->name))
 			printk(KERN_INFO "%sname=%s", count ? "," : "",
 				   root->name);
-		printk(KERN_INFO "\n");*/
+		printk(KERN_INFO "\n");
 	}
 
 	/*printk(KERN_INFO "LTTng cgroups: Releasing locks...\n");
