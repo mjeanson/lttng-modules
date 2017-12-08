@@ -517,7 +517,9 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 		struct cgroup_subsys *ss;
 		int ssid, count = 0;
 
-		if (root == &cgrp_dfl_root && !cgrp_dfl_visible)
+		printk(KERN_INFO "LTTng cgroups: ok\n");
+
+		/*if (root == &cgrp_dfl_root && !cgrp_dfl_visible)
 			continue;
 
 		printk(KERN_INFO "%d:", root->hierarchy_id);
@@ -529,7 +531,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 		if (strlen(root->name))
 			printk(KERN_INFO "%sname=%s", count ? "," : "",
 				   root->name);
-		printk(KERN_INFO "\n");
+		printk(KERN_INFO "\n");*/
 	}
 
 	printk(KERN_INFO "LTTng cgroups: Releasing locks...\n");
