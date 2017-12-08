@@ -499,7 +499,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 	struct cgroup_root *root;
 	char *buf;
 	bool cgrp_dfl_visible;
-	struct list_head cgroup_roots;
+	struct list_head* cgroup_roots_ptr;
 	struct cgroup_subsys **cgroup_subsys;
 
 	buf = kmalloc(PATH_MAX, GFP_KERNEL);
@@ -507,19 +507,24 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 		return -1;
 
 	cgrp_dfl_visible = wrapper_get_cgrp_dfl_visible();
-	cgroup_roots = *wrapper_get_cgroup_roots();
+	cgroup_roots_ptr = wrapper_get_cgroup_roots();
 	cgroup_subsys = wrapper_get_cgroup_subsys();
+
+	if (!cgroup_roots_ptr)
+		printk(KERN_INFO "LTTng cgroups: Dammit...\n");
+	else
+		printk(KERN_INFO "LTTng cgroups: ok...\n");
 
 	mutex_lock(&cgroup_mutex);
 	spin_lock_irq(&css_set_lock);
 	printk(KERN_INFO "LTTng cgroups: Holding locks...\n");
-	for_each_root(root) {
+	/*for_each_root(root) {
 		struct cgroup_subsys *ss;
 		int ssid, count = 0;
 
 		printk(KERN_INFO "LTTng cgroups: ok\n");
 
-		/*if (root == &cgrp_dfl_root && !cgrp_dfl_visible)
+		if (root == &cgrp_dfl_root && !cgrp_dfl_visible)
 			continue;
 
 		printk(KERN_INFO "%d:", root->hierarchy_id);
@@ -531,8 +536,8 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 		if (strlen(root->name))
 			printk(KERN_INFO "%sname=%s", count ? "," : "",
 				   root->name);
-		printk(KERN_INFO "\n");*/
-	}
+		printk(KERN_INFO "\n");
+	}*/
 
 	printk(KERN_INFO "LTTng cgroups: Releasing locks...\n");
 	spin_unlock_irq(&css_set_lock);
