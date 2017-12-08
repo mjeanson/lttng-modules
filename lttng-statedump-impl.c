@@ -499,12 +499,16 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 	struct cgroup_root *root;
 	char *buf;
 	bool cgrp_dfl_visible;
+	struct list_head cgroup_roots;
+	struct cgroup_subsys *cgroup_subsys;
 
 	buf = kmalloc(PATH_MAX, GFP_KERNEL);
 	if (!buf)
 		return -1;
 
 	cgrp_dfl_visible = wrapper_get_cgrp_dfl_visible();
+	cgroup_roots = wrapper_get_cgroup_roots();
+	cgroup_subsys = wrapper_get_cgroup_subsys();
 
 	mutex_lock(&cgroup_mutex);
 	spin_lock_irq(&css_set_lock);

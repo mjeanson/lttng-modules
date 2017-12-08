@@ -52,6 +52,18 @@ bool wrapper_get_cgrp_dfl_visible(void)
 	return (bool) kallsyms_lookup_dataptr("cgrp_dfl_visible");
 }
 
+static inline
+struct list_head wrapper_get_cgroup_roots(void)
+{
+	return (struct list_head) kallsyms_lookup_dataptr("cgroup_roots");
+}
+
+static inline
+struct cgroup_subsys* wrapper_get_cgroup_subsys(void)
+{
+	return (struct cgroup_subsys*) kallsyms_lookup_dataptr("cgroup_subsys");
+}
+
 #endif
 
 #endif /* _LTTNG_WRAPPER_CGROUP_H */
