@@ -510,16 +510,13 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 	cgroup_roots_ptr = wrapper_get_cgroup_roots();
 	cgroup_subsys = wrapper_get_cgroup_subsys();
 
-	if (!cgroup_roots_ptr)
-		printk(KERN_INFO "LTTng cgroups: Dammit...\n");
-	else
-		printk(KERN_INFO "LTTng cgroups: ok...\n");
-
-	mutex_lock(&cgroup_mutex);
+	/*mutex_lock(&cgroup_mutex);
 	spin_lock_irq(&css_set_lock);
-	printk(KERN_INFO "LTTng cgroups: Holding locks...\n");
-	/*for_each_root(root) {
-		struct cgroup_subsys *ss;
+	printk(KERN_INFO "LTTng cgroups: Holding locks...\n");*/
+
+	list_for_each_entry((root), cgroup_roots_ptr, root_list) {
+		printk(KERN_INFO "LTTng cgroups: ok we're iterating guys...\n");		
+		/*struct cgroup_subsys *ss;
 		int ssid, count = 0;
 
 		printk(KERN_INFO "LTTng cgroups: ok\n");
@@ -536,13 +533,13 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 		if (strlen(root->name))
 			printk(KERN_INFO "%sname=%s", count ? "," : "",
 				   root->name);
-		printk(KERN_INFO "\n");
-	}*/
+		printk(KERN_INFO "\n");*/
+	}
 
-	printk(KERN_INFO "LTTng cgroups: Releasing locks...\n");
+	/*printk(KERN_INFO "LTTng cgroups: Releasing locks...\n");
 	spin_unlock_irq(&css_set_lock);
 	mutex_unlock(&cgroup_mutex);
-	printk(KERN_INFO "LTTng cgroups: Locks released\n");
+	printk(KERN_INFO "LTTng cgroups: Locks released\n");*/
 
 	return 0;
 }
