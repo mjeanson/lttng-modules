@@ -32,6 +32,10 @@
 #include <linux/kallsyms.h>
 #include <wrapper/kallsyms.h>
 
+#define wrapper_css_for_each_descendant_pre(pos, css)				\
+	for ((pos) = wrapper_css_next_descendant_pre(NULL, (css)); (pos);	\
+	     (pos) = wrapper_css_next_descendant_pre((pos), (css)))
+
 static inline
 struct cgroup_subsys_state* wrapper_cgroup_get_e_css(struct cgroup *cgroup,
 							struct cgroup_subsys *ss)

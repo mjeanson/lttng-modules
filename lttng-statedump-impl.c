@@ -529,10 +529,10 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 
 			for_each_subsys(ss, ssid) {
 				printk(KERN_INFO "subsystem names: %s, %s", ss->name, ss->legacy_name);				
-				css = cgroup_get_e_css(cgrp, ss);
+				css = wrapper_cgroup_get_e_css(cgrp, ss);
 				if (!css)
 					continue;
-				css_for_each_descendant_pre(d_css, css) {
+				wrapper_css_for_each_descendant_pre(d_css, css) {
 					d_cgrp = d_css->cgroup;
 					cgroup_path(d_cgrp, buf, PATH_MAX);
 					printk(KERN_INFO "child %s", buf);
