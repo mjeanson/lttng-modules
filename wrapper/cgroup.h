@@ -72,20 +72,6 @@ struct cgroup_subsys_state* wrapper_css_next_descendant_pre
 }
 
 static inline
-bool wrapper_cgroup_ssid_enabled(int ssid)
-{
-	bool (*cgroup_ssid_enabled_sym)(int ssid);
-
-	cgroup_ssid_enabled_sym = (void *) kallsyms_lookup_funcptr("cgroup_ssid_enabled");
-	if (cgroup_ssid_enabled_sym) {
-		return cgroup_ssid_enabled_sym(ssid);
-	} else {
-		printk_once(KERN_WARNING "LTTng: cgroup_ssid_enabled symbol lookup failed.\n");
-		return NULL;
-	}
-}
-
-static inline
 bool* wrapper_get_cgrp_dfl_visible(void)
 {
 	return (bool*) kallsyms_lookup_dataptr("cgrp_dfl_visible");

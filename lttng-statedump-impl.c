@@ -528,7 +528,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 			cgrp = &(root->cgrp);
 
 			for_each_subsys(ss, ssid) {
-				if (!wrapper_cgroup_ssid_enabled(ssid))
+				if (!(root->subsys_mask & (1 << ssid)))
 					continue;
 				printk(KERN_INFO "subsystem names: %s, %s", ss->name, ss->legacy_name);				
 				css = wrapper_cgroup_get_e_css(cgrp, ss);
