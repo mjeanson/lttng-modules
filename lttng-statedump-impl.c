@@ -510,9 +510,9 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 	cgroup_roots_ptr = wrapper_get_cgroup_roots();
 	cgroup_subsys = wrapper_get_cgroup_subsys();
 
-	/*mutex_lock(&cgroup_mutex);
+	mutex_lock(&cgroup_mutex);
 	spin_lock_irq(&css_set_lock);
-	printk(KERN_INFO "LTTng cgroups: Holding locks...\n");*/
+	printk(KERN_INFO "LTTng cgroups: Holding locks...\n");
 
 	list_for_each_entry((root), cgroup_roots_ptr, root_list) {
 
@@ -521,15 +521,22 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 
 		printk(KERN_INFO "Hierarchy ID %d:", root->hierarchy_id);
 		if (root != &cgrp_dfl_root) {
-			struct cgroup *cgrp;
-			struct cgroup_subsys_state *d_css;
-			struct cgroup *dsct;
-			
+			struct cgroup *cgrp, d_cgrp;
+			struct cgroup_subsys *ss;
+			struct cgroup_subsys_state *css, d_css;
+			int ssid;
 			cgrp = &(root->cgrp);
 
-			cgroup_for_each_live_descendant_pre(dsct, d_css, cgrp) {
-				cgroup_path(dsct, buf, PATH_MAX);
-				printk(KERN_INFO "child %s", buf);
+			for_each_subsys(ss, ssid) {
+				printk(KERN_INFO "subsystem names: %s, %s", ss->name, ss->legacy_name);				
+				css = cgroup_get_e_css(cgrp, ss);
+				if (!css)
+					continue
+				css_for_each_descendant_pre(d_css, css) {
+					d_cgrp = d_css->cgroup;
+					cgroup_path(d_cgrp, buf, PATH_MAX);
+					printk(KERN_INFO "child %s", buf);
+				}
 			}
 		}
 			
@@ -537,10 +544,10 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 			printk(KERN_INFO "%sname=%s", root->name);
 	}
 
-	/*printk(KERN_INFO "LTTng cgroups: Releasing locks...\n");
+	printk(KERN_INFO "LTTng cgroups: Releasing locks...\n");
 	spin_unlock_irq(&css_set_lock);
 	mutex_unlock(&cgroup_mutex);
-	printk(KERN_INFO "LTTng cgroups: Locks released\n");*/
+	printk(KERN_INFO "LTTng cgroups: Locks released\n");
 
 	return 0;
 }

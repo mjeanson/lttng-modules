@@ -64,21 +64,6 @@ struct cgroup_subsys** wrapper_get_cgroup_subsys(void)
 	return (struct cgroup_subsys**) kallsyms_lookup_dataptr("cgroup_subsys");
 }
 
-/* walk live descendants in preorder */
-#define cgroup_for_each_live_descendant_pre(dsct, d_css, cgrp)		\
-	css_for_each_descendant_pre((d_css), cgroup_css((cgrp), NULL))	\
-		if (({ lockdep_assert_held(&cgroup_mutex);		\
-		       (dsct) = (d_css)->cgroup;			\
-		       cgroup_is_dead(dsct); }))			\
-			;						\
-		else
-
-#define for_each_e_css(css, ssid, cgrp)					\
-	for ((ssid) = 0; (ssid) < CGROUP_SUBSYS_COUNT; (ssid)++)	\
-		if (!((css) = cgroup_e_css(cgrp, cgroup_subsys[(ssid)]))) \
-			;						\
-		else
-
 #endif
 
 #endif /* _LTTNG_WRAPPER_CGROUP_H */
