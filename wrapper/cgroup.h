@@ -32,19 +32,40 @@
 #include <linux/kallsyms.h>
 #include <wrapper/kallsyms.h>
 
-/* static inline
-char *wrapper_disk_name(struct gendisk *hd, int partno, char *buf)
+static inline
+struct cgroup_subsys_state* wrapper_cgroup_get_e_css(struct cgroup *cgroup,
+							struct cgroup_subsys *ss)
 {
-	char *(*disk_name_sym)(struct gendisk *hd, int partno, char *buf);
+	struct cgroup_subsys_state *(*cgroup_get_e_css_sym)(struct cgroup *cgroup,
+								struct cgroup_subsys *ss);
 
-	disk_name_sym = (void *) kallsyms_lookup_funcptr("disk_name");
-	if (disk_name_sym) {
-		return disk_name_sym(hd, partno, buf);
+	cgroup_get_e_css_sym = (void *) kallsyms_lookup_funcptr("cgroup_get_e_css");
+	if (cgroup_get_e_css_sym) {
+		return cgroup_get_e_css_sym(cgroup, ss);
 	} else {
-		printk_once(KERN_WARNING "LTTng: disk_name symbol lookup failed.\n");
+		printk_once(KERN_WARNING "LTTng: cgroup_get_e_css symbol lookup failed.\n");
 		return NULL;
 	}
-} */
+}
+
+static inline
+struct cgroup_subsys_state* wrapper_css_next_descendant_pre
+							(struct cgroup_subsys_state *pos,
+						    struct cgroup_subsys_state *css)
+{
+	struct cgroup_subsys_state *(*css_next_descendant_pre_sym)
+								(struct cgroup_subsys_state *pos,
+						    	struct cgroup_subsys_state *css);
+
+	css_next_descendant_pre_sym = (void *)
+								kallsyms_lookup_funcptr("css_next_descendant_pre");
+	if (css_next_descendant_pre_sym) {
+		return css_next_descendant_pre_sym(pos, css);
+	} else {
+		printk_once(KERN_WARNING "LTTng: css_next_descendant_pre symbol lookup failed.\n");
+		return NULL;
+	}
+}
 
 static inline
 bool* wrapper_get_cgrp_dfl_visible(void)
