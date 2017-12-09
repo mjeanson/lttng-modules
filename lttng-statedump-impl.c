@@ -521,9 +521,9 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 
 		printk(KERN_INFO "Hierarchy ID %d:", root->hierarchy_id);
 		if (root != &cgrp_dfl_root) {
-			struct cgroup *cgrp, d_cgrp;
+			struct cgroup *cgrp, *d_cgrp;
 			struct cgroup_subsys *ss;
-			struct cgroup_subsys_state *css, d_css;
+			struct cgroup_subsys_state *css, *d_css;
 			int ssid;
 			cgrp = &(root->cgrp);
 
