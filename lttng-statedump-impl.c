@@ -515,30 +515,28 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 	printk(KERN_INFO "LTTng cgroups: Holding locks...\n");
 
 	list_for_each_entry((root), cgroup_roots_ptr, root_list) {
+		struct cgroup *cgrp, *d_cgrp;
+		struct cgroup_subsys *ss;
+		struct cgroup_subsys_state *css, *d_css;
+		int ssid;
 
 		if (root == &cgrp_dfl_root && !cgrp_dfl_visible)
 			continue;
 
 		printk(KERN_INFO "Hierarchy ID %d:", root->hierarchy_id);
-		if (root != &cgrp_dfl_root) {
-			struct cgroup *cgrp, *d_cgrp;
-			struct cgroup_subsys *ss;
-			struct cgroup_subsys_state *css, *d_css;
-			int ssid;
-			cgrp = &(root->cgrp);
+		cgrp = &(root->cgrp);
 
-			for_each_subsys(ss, ssid) {
-				if (!(root->subsys_mask & (1 << ssid)))
-					continue;
-				printk(KERN_INFO "subsystem names: %s, %s", ss->name, ss->legacy_name);				
-				css = wrapper_cgroup_get_e_css(cgrp, ss);
-				if (!css)
-					continue;
-				wrapper_css_for_each_descendant_pre(d_css, css) {
-					d_cgrp = d_css->cgroup;
-					cgroup_path(d_cgrp, buf, PATH_MAX);
-					printk(KERN_INFO "child %s", buf);
-				}
+		for_each_subsys(ss, ssid) {
+			if (!(root->subsys_mask & (1 << ssid)))
+				continue;
+			printk(KERN_INFO "subsystem names: %s, %s", ss->name, ss->legacy_name);				
+			css = wrapper_cgroup_get_e_css(cgrp, ss);
+			if (!css)
+				continue;
+			wrapper_css_for_each_descendant_pre(d_css, css) {
+				d_cgrp = d_css->cgroup;
+				cgroup_path(d_cgrp, buf, PATH_MAX);
+				printk(KERN_INFO "child %s", buf);
 			}
 		}
 			
