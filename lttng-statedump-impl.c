@@ -511,41 +511,87 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 	cgroup_subsys = wrapper_get_cgroup_subsys();
 
 	mutex_lock(&cgroup_mutex);
-	spin_lock_irq(&css_set_lock);
 	printk(KERN_INFO "LTTng cgroups: Holding locks...\n");
 
+	/* Iterate through the hierarchies */
 	list_for_each_entry((root), cgroup_roots_ptr, root_list) {
 		struct cgroup *cgrp, *d_cgrp;
 		struct cgroup_subsys *ss;
 		struct cgroup_subsys_state *css, *d_css;
 		int ssid;
+		struct cftype *cfts;
+		struct cftype *cft;
 
 		if (root == &cgrp_dfl_root && !cgrp_dfl_visible)
 			continue;
 
 		printk(KERN_INFO "Hierarchy ID %d:", root->hierarchy_id);
 		cgrp = &(root->cgrp);
+		if (strlen(root->name))
+			printk(KERN_INFO "Hierarchy name=%s", root->name);
 
 		for_each_subsys(ss, ssid) {
+			/* Check that the subsystem ss is attached to the hierarchy */
 			if (!(root->subsys_mask & (1 << ssid)))
 				continue;
 			printk(KERN_INFO "subsystem names: %s, %s", ss->name, ss->legacy_name);				
 			css = wrapper_cgroup_get_e_css(cgrp, ss);
 			if (!css)
 				continue;
+			/* Iterate through descendant cgroup subsystems */				
 			wrapper_css_for_each_descendant_pre(d_css, css) {
 				d_cgrp = d_css->cgroup;
+
+				/* Print cgroup path */
 				cgroup_path(d_cgrp, buf, PATH_MAX);
 				printk(KERN_INFO "child %s", buf);
+
+				/* Print css info */
+				if (ss->dfl_cftypes && ss->dfl_cftypes == ss->legacy_cftypes) {
+					cfts = ss->dfl_cftypes;
+					for (cft = cfts; cft->name[0] != '\0'; cft++) {
+						if (cft->read_u64) {
+							u64 param_val = cft->read_u64(d_css, cft);
+							printk(KERN_INFO "param %s, value %llu", cft->name, param_val);
+						}
+						if (cft->read_s64) {
+							s64 param_val = cft->read_s64(d_css, cft);
+							printk(KERN_INFO "param %s, value %lld", cft->name, param_val);
+						}
+					}
+				} else {
+					if (ss->dfl_cftypes) {
+						cfts = ss->dfl_cftypes;
+						for (cft = cfts; cft->name[0] != '\0'; cft++) {
+							if (cft->read_u64) {
+								u64 param_val = cft->read_u64(d_css, cft);
+								printk(KERN_INFO "param %s, value %llu", cft->name, param_val);
+							}
+							if (cft->read_s64) {
+								s64 param_val = cft->read_s64(d_css, cft);
+								printk(KERN_INFO "param %s, value %lld", cft->name, param_val);
+							}
+						}
+					}
+					if (ss->legacy_cftypes) {
+						cfts = ss->legacy_cftypes;
+						for (cft = cfts; cft->name[0] != '\0'; cft++) {
+							if (cft->read_u64) {
+								u64 param_val = cft->read_u64(d_css, cft);
+								printk(KERN_INFO "param %s, value %llu", cft->name, param_val);
+							}
+							if (cft->read_s64) {
+								s64 param_val = cft->read_s64(d_css, cft);
+								printk(KERN_INFO "param %s, value %lld", cft->name, param_val);
+							}
+						}
+					}
+				}
 			}
 		}
-			
-		if (strlen(root->name))
-			printk(KERN_INFO "%sname=%s", root->name);
 	}
 
 	printk(KERN_INFO "LTTng cgroups: Releasing locks...\n");
-	spin_unlock_irq(&css_set_lock);
 	mutex_unlock(&cgroup_mutex);
 	printk(KERN_INFO "LTTng cgroups: Locks released\n");
 
