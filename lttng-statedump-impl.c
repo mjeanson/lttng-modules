@@ -497,14 +497,9 @@ static
 int lttng_enumerate_cgroups_states(struct lttng_session *session)
 {
 	struct cgroup_root *root;
-	char *buf;
 	bool cgrp_dfl_visible;
 	struct list_head* cgroup_roots_ptr;
 	struct cgroup_subsys **cgroup_subsys;
-
-	buf = kmalloc(PATH_MAX, GFP_KERNEL);
-	if (!buf)
-		return -1;
 
 	cgrp_dfl_visible = *wrapper_get_cgrp_dfl_visible();
 	cgroup_roots_ptr = wrapper_get_cgroup_roots();
@@ -540,11 +535,17 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 				continue;
 			/* Iterate through descendant cgroup subsystems */				
 			wrapper_css_for_each_descendant_pre(d_css, css) {
+				int ancestor_id;
 				d_cgrp = d_css->cgroup;
 
-				/* Print cgroup path */
-				cgroup_path(d_cgrp, buf, PATH_MAX);
-				printk(KERN_INFO "child %s", buf);
+				if (d_cgrp->id == 1)
+					ancestor_id = 0;
+				else
+					ancestor_id = d_cgrp->ancestor_ids[d_cgrp->level - 1];
+
+				/* Print cgroup info */
+				printk(KERN_INFO "cgroup: hierarchy_id=%d; id=%d; ancestor_id=%d; name=%s",
+							root->hierarchy_id, d_cgrp->id, ancestor_id, d_cgrp->kn->name);
 
 				/* Print css info */
 				if (ss->dfl_cftypes && ss->dfl_cftypes == ss->legacy_cftypes) {
