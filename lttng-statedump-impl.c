@@ -434,6 +434,31 @@ void lttng_statedump_process_ns(struct lttng_session *session,
 #endif
 }
 
+/*
+ * Called with task lock held.
+ */
+static
+void lttng_statedump_process_cgroup(struct lttng_session *session,
+		struct task_struct *p)
+{
+	struct css_set *css_set;
+	struct cgroup_subsys_state *css;
+	struct cgroup *cgrp;
+	int i;
+
+	rcu_read_lock();
+	css_set = p->cgroups;
+
+	for(i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+		css = css_set->subsys[i];
+		cgrp = css->cgroup;
+		if (css)
+			printk(KERN_INFO "LTTng cgroups: process_tid=%d; cgroup_hierarchy_id=%d; cgroup_id=%d", p->pid, cgrp->root->hierarchy_id, cgrp->id);	
+	}
+
+	rcu_read_unlock();
+}
+
 static
 int lttng_enumerate_process_states(struct lttng_session *session)
 {
@@ -485,6 +510,7 @@ int lttng_enumerate_process_states(struct lttng_session *session)
 				type = LTTNG_KERNEL_THREAD;
 			lttng_statedump_process_ns(session,
 				p, type, mode, submode, status);
+			lttng_statedump_process_cgroup(session, p);
 			task_unlock(p);
 		} while_each_thread(g, p);
 	}
