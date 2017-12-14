@@ -559,7 +559,8 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 			css = wrapper_cgroup_get_e_css(cgrp, ss);
 			if (!css)
 				continue;
-			/* Iterate through descendant cgroup subsystems */				
+			/* Iterate through descendant cgroup subsystems */	
+			rcu_read_lock();			
 			wrapper_css_for_each_descendant_pre(d_css, css) {
 				int ancestor_id;
 				d_cgrp = d_css->cgroup;
@@ -615,6 +616,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 					}
 				}
 			}
+			rcu_read_unlock();
 		}
 	}
 
