@@ -599,7 +599,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 
 							printk(KERN_INFO "param %s follows", cft->name);
 
-							buf_size = 10000; /* Ok that's quite a lot */
+							buf_size = 1000; /* Ok that's quite a lot */
 							sf = kmalloc(sizeof(struct seq_file), GFP_KERNEL);
 							of = kmalloc(sizeof(struct kernfs_open_file), GFP_KERNEL);
 							kn = kmalloc(sizeof(struct kernfs_node), GFP_KERNEL);
@@ -663,7 +663,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 
 								printk(KERN_INFO "param %s follows", cft->name);
 
-								buf_size = 10000; /* Ok that's quite a lot */
+								buf_size = 1000; /* Ok that's quite a lot */
 								sf = kmalloc(sizeof(struct seq_file), GFP_KERNEL);
 								of = kmalloc(sizeof(struct kernfs_open_file), GFP_KERNEL);
 								kn = kmalloc(sizeof(struct kernfs_node), GFP_KERNEL);
@@ -727,7 +727,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 
 								printk(KERN_INFO "param %s follows", cft->name);
 
-								buf_size = 10000; /* Ok that's quite a lot */
+								buf_size = 1000; /* Ok that's quite a lot */
 								sf = kmalloc(sizeof(struct seq_file), GFP_KERNEL);
 								of = kmalloc(sizeof(struct kernfs_open_file), GFP_KERNEL);
 								kn = kmalloc(sizeof(struct kernfs_node), GFP_KERNEL);
