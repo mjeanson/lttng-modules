@@ -593,6 +593,9 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 							char *buf;
 							int buf_size;
 							int seq_ret;
+							void *old_kn_priv;
+
+							printk(KERN_INFO "param %s follows", cft->name);
 
 							buf_size = cft->max_write_len * 1000; /* Ok that's quite a lot */
 							sf = kmalloc(sizeof(struct seq_file), GFP_KERNEL);
@@ -607,16 +610,22 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 							sf->read_pos = 0;
 							sf->private = of;
 							of->kn = d_cgrp->kn;
+
+							/* HORRIBLE CODE FOLLOWS */
+							old_kn_priv = d_cgrp->kn->priv;
+							d_cgrp->kn->priv = (void *)cft;
 							
 
 							seq_ret = cft->seq_show(sf, NULL);
 							if (seq_ret)
 								printk(KERN_INFO "ERROR: param %s, ret %d", cft->name, seq_ret);
 							else {
-								printk(KERN_INFO "param %s follows", cft->name);
 								printk(KERN_INFO "%s", sf->buf);
 								printk(KERN_INFO "----------------");
 							}
+
+							/* Let's clean up our mess */
+							d_cgrp->kn->priv = old_kn_priv;
 
 							kfree(buf);
 							kfree(of);
