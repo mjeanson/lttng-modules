@@ -593,7 +593,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 							char *buf;
 							int buf_size;
 							int seq_ret;
-							void *old_kn_priv;
+							void *old_kn_parent_priv;
 
 							printk(KERN_INFO "param %s follows", cft->name);
 
@@ -612,8 +612,8 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 							of->kn = d_cgrp->kn;
 
 							/* HORRIBLE CODE FOLLOWS */
-							old_kn_priv = d_cgrp->kn->priv;
-							d_cgrp->kn->priv = (void *)cft;
+							old_kn_parent_priv = d_cgrp->kn->parent->priv;
+							d_cgrp->kn->parent->priv = (void *)cft;
 							
 
 							seq_ret = cft->seq_show(sf, NULL);
@@ -625,7 +625,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 							}
 
 							/* Let's clean up our mess */
-							d_cgrp->kn->priv = old_kn_priv;
+							d_cgrp->kn->parent->priv = old_kn_parent_priv;
 
 							kfree(buf);
 							kfree(of);
