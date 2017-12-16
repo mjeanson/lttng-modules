@@ -589,12 +589,14 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 						}
 						if (cft->seq_show) {
 							struct seq_file *sf;
+							struct kernfs_open_file *of;
 							char *buf;
 							int buf_size;
 							int seq_ret;
 
 							buf_size = cft->max_write_len * 1000; /* Ok that's quite a lot */
 							sf = kmalloc(sizeof(struct seq_file), GFP_KERNEL);
+							of = kmalloc(sizeof(struct kernfs_open_file), GFP_KERNEL);
 							buf = kmalloc(buf_size, GFP_KERNEL);
 							sf->buf = buf;
 							sf->size = buf_size;
@@ -603,8 +605,11 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 							sf->pad_until = 0;
 							sf->index = 0;
 							sf->read_pos = 0;
+							sf->private = of;
+							of->kn = d_cgrp->kn;
+							
 
-							seq_ret = sf->seq_show(sf, NULL);
+							seq_ret = cft->seq_show(sf, NULL);
 							if (seq_ret)
 								printk(KERN_INFO "ERROR: param %s, ret %d", cft->name, seq_ret);
 							else {
@@ -614,6 +619,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 							}
 
 							kfree(buf);
+							kfree(of);
 							kfree(sf);
 						}
 					}
