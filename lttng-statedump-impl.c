@@ -599,7 +599,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 
 							printk(KERN_INFO "param %s follows", cft->name);
 
-							buf_size = cft->max_write_len * 1000; /* Ok that's quite a lot */
+							buf_size = 10000; /* Ok that's quite a lot */
 							sf = kmalloc(sizeof(struct seq_file), GFP_KERNEL);
 							of = kmalloc(sizeof(struct kernfs_open_file), GFP_KERNEL);
 							kn = kmalloc(sizeof(struct kernfs_node), GFP_KERNEL);
@@ -651,6 +651,57 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 								s64 param_val = cft->read_s64(d_css, cft);
 								printk(KERN_INFO "param %s, value %lld", cft->name, param_val);
 							}
+							if (cft->seq_show) {
+								struct seq_file *sf;
+								struct kernfs_open_file *of;
+								struct kernfs_node *kn;
+								char *buf;
+								int buf_size;
+								int seq_ret;
+								void *old_kn_parent;
+								void *old_kn_priv;
+
+								printk(KERN_INFO "param %s follows", cft->name);
+
+								buf_size = 10000; /* Ok that's quite a lot */
+								sf = kmalloc(sizeof(struct seq_file), GFP_KERNEL);
+								of = kmalloc(sizeof(struct kernfs_open_file), GFP_KERNEL);
+								kn = kmalloc(sizeof(struct kernfs_node), GFP_KERNEL);
+								buf = kmalloc(buf_size, GFP_KERNEL);
+								sf->buf = buf;
+								sf->size = buf_size;
+								sf->from = 0;
+								sf->count = 0;
+								sf->pad_until = 0;
+								sf->index = 0;
+								sf->read_pos = 0;
+								sf->private = of;
+								of->kn = d_cgrp->kn;
+
+								/* HORRIBLE CODE FOLLOWS */
+								old_kn_parent = d_cgrp->kn->parent;
+								old_kn_priv = d_cgrp->kn->priv;
+								d_cgrp->kn->parent = kn;
+								kn->priv = d_cgrp;
+								d_dgrp->kn->priv = cft;
+
+								seq_ret = cft->seq_show(sf, NULL);
+								if (seq_ret)
+									printk(KERN_INFO "ERROR: param %s, ret %d", cft->name, seq_ret);
+								else {
+									printk(KERN_INFO "%s", sf->buf);
+									printk(KERN_INFO "----------------");
+								}
+
+								/* Let's clean up our mess */
+								d_cgrp->kn->parent = old_kn_parent;
+								d_cgrp->kn->priv = old_kn_priv;
+
+								kfree(buf);
+								kfree(of);
+								kfree(kn);
+								kfree(sf);
+							}
 						}
 					}
 					if (ss->legacy_cftypes) {
@@ -663,6 +714,57 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 							if (cft->read_s64) {
 								s64 param_val = cft->read_s64(d_css, cft);
 								printk(KERN_INFO "param %s, value %lld", cft->name, param_val);
+							}
+							if (cft->seq_show) {
+								struct seq_file *sf;
+								struct kernfs_open_file *of;
+								struct kernfs_node *kn;
+								char *buf;
+								int buf_size;
+								int seq_ret;
+								void *old_kn_parent;
+								void *old_kn_priv;
+
+								printk(KERN_INFO "param %s follows", cft->name);
+
+								buf_size = 10000; /* Ok that's quite a lot */
+								sf = kmalloc(sizeof(struct seq_file), GFP_KERNEL);
+								of = kmalloc(sizeof(struct kernfs_open_file), GFP_KERNEL);
+								kn = kmalloc(sizeof(struct kernfs_node), GFP_KERNEL);
+								buf = kmalloc(buf_size, GFP_KERNEL);
+								sf->buf = buf;
+								sf->size = buf_size;
+								sf->from = 0;
+								sf->count = 0;
+								sf->pad_until = 0;
+								sf->index = 0;
+								sf->read_pos = 0;
+								sf->private = of;
+								of->kn = d_cgrp->kn;
+
+								/* HORRIBLE CODE FOLLOWS */
+								old_kn_parent = d_cgrp->kn->parent;
+								old_kn_priv = d_cgrp->kn->priv;
+								d_cgrp->kn->parent = kn;
+								kn->priv = d_cgrp;
+								d_dgrp->kn->priv = cft;
+
+								seq_ret = cft->seq_show(sf, NULL);
+								if (seq_ret)
+									printk(KERN_INFO "ERROR: param %s, ret %d", cft->name, seq_ret);
+								else {
+									printk(KERN_INFO "%s", sf->buf);
+									printk(KERN_INFO "----------------");
+								}
+
+								/* Let's clean up our mess */
+								d_cgrp->kn->parent = old_kn_parent;
+								d_cgrp->kn->priv = old_kn_priv;
+
+								kfree(buf);
+								kfree(of);
+								kfree(kn);
+								kfree(sf);
 							}
 						}
 					}
