@@ -619,7 +619,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 							old_kn_priv = d_cgrp->kn->priv;
 							d_cgrp->kn->parent = kn;
 							kn->priv = d_cgrp;
-							d_dgrp->kn->priv = cft;
+							d_cgrp->kn->priv = cft;
 
 							seq_ret = cft->seq_show(sf, NULL);
 							if (seq_ret)
@@ -683,7 +683,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 								old_kn_priv = d_cgrp->kn->priv;
 								d_cgrp->kn->parent = kn;
 								kn->priv = d_cgrp;
-								d_dgrp->kn->priv = cft;
+								d_cgrp->kn->priv = cft;
 
 								seq_ret = cft->seq_show(sf, NULL);
 								if (seq_ret)
@@ -747,7 +747,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 								old_kn_priv = d_cgrp->kn->priv;
 								d_cgrp->kn->parent = kn;
 								kn->priv = d_cgrp;
-								d_dgrp->kn->priv = cft;
+								d_cgrp->kn->priv = cft;
 
 								seq_ret = cft->seq_show(sf, NULL);
 								if (seq_ret)
