@@ -46,6 +46,7 @@
 #include <linux/wait.h>
 #include <linux/mutex.h>
 #include <linux/device.h>
+#include <linux/seq_file.h>
 #include <linux/cgroup.h>
 #include <../kernel/cgroup/cgroup-internal.h>
 
@@ -585,6 +586,35 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 						if (cft->read_s64) {
 							s64 param_val = cft->read_s64(d_css, cft);
 							printk(KERN_INFO "param %s, value %lld", cft->name, param_val);
+						}
+						if (cft->seq_show) {
+							struct seq_file *sf;
+							char *buf;
+							int buf_size;
+							int seq_ret;
+
+							buf_size = cft->max_write_len * 1000; /* Ok that's quite a lot */
+							sf = kmalloc(sizeof(struct seq_file), GFP_KERNEL);
+							buf = kmalloc(buf_size, GFP_KERNEL);
+							sf->buf = buf;
+							sf->size = buf_size;
+							sf->from = 0;
+							sf->count = 0;
+							sf->pad_until = 0;
+							sf->index = 0;
+							sf->read_pos = 0;
+
+							seq_ret = sf->seq_show(sf, NULL);
+							if (seq_ret)
+								printk(KERN_INFO "ERROR: param %s, ret %d", cft->name, seq_ret);
+							else {
+								printk(KERN_INFO "param %s follows", cft->name);
+								printk(KERN_INFO "%s", sf->buf);
+								printk(KERN_INFO "----------------");
+							}
+
+							kfree(buf);
+							kfree(sf);
 						}
 					}
 				} else {
