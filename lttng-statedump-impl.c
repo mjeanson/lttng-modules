@@ -621,8 +621,8 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 	cgroup_roots_ptr = wrapper_get_cgroup_roots();
 	cgroup_subsys = wrapper_get_cgroup_subsys();
 
-	/* mutex_lock(&cgroup_mutex);
-	printk(KERN_INFO "LTTng cgroups: Holding locks...\n"); */
+	mutex_lock(&cgroup_mutex);
+	printk(KERN_INFO "LTTng cgroups: Holding locks...\n");
 
 	/* Iterate through the hierarchies */
 	list_for_each_entry((root), cgroup_roots_ptr, root_list) {
@@ -644,6 +644,8 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 		for_each_subsys(ss, ssid) {
 			/* Check that the subsystem ss is attached to the hierarchy */
 			if (!(root->subsys_mask & (1 << ssid)))
+				continue;
+			if (strcmp(ss->name, "debug") == 0)
 				continue;
 			printk(KERN_INFO "subsystem names: %s, %s", ss->name, ss->legacy_name);				
 			css = wrapper_cgroup_get_e_css(cgrp, ss);
@@ -698,9 +700,9 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 	kfree(fake_kn);
 	kfree(fake_sf);
 
-	/* printk(KERN_INFO "LTTng cgroups: Releasing locks...\n");
+	printk(KERN_INFO "LTTng cgroups: Releasing locks...\n");
 	mutex_unlock(&cgroup_mutex);
-	printk(KERN_INFO "LTTng cgroups: Locks released\n"); */
+	printk(KERN_INFO "LTTng cgroups: Locks released\n");
 
 	return 0;
 }
