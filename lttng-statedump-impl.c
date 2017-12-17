@@ -522,9 +522,10 @@ int lttng_enumerate_process_states(struct lttng_session *session)
 }
 
 static
-int lttng_dump_cgroup_file_param(struct lttng_session *session,
+void lttng_dump_cgroup_file_param(struct lttng_session *session,
 		struct cgroup *cgrp, struct cgroup_subsys_state *css,
-		struct cftype *cft, struct seq_file *sf, struct kernfs_node *kn) {
+		struct cftype *cft, struct seq_file *sf, struct kernfs_node *kn,
+		struct kernfs_open_file *of) {
 	if (cft->read_u64) {
 		u64 param_val = cft->read_u64(css, cft);
 		printk(KERN_INFO "param %s, value %llu", cft->name, param_val);
@@ -545,7 +546,8 @@ int lttng_dump_cgroup_file_param(struct lttng_session *session,
 		sf->pad_until = 0;
 		sf->index = 0;
 		sf->read_pos = 0;
-		sf->private->kn = cgrp->kn;
+		of->kn = cgrp->kn;
+		sf->private = of;
 
 		/* HORRIBLE CODE FOLLOWS */
 		old_kn_parent = cgrp->kn->parent;
@@ -591,7 +593,6 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 	buf = kmalloc(buf_size, GFP_KERNEL);
 	fake_sf->buf = buf;
 	fake_sf->size = buf_size;
-	fake_sf->private = fake_of;
 
 	cgrp_dfl_visible = *wrapper_get_cgrp_dfl_visible();
 	cgroup_roots_ptr = wrapper_get_cgroup_roots();
@@ -645,21 +646,21 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 					cfts = ss->dfl_cftypes;
 					for (cft = cfts; cft->name[0] != '\0'; cft++) {
 						lttng_dump_cgroup_file_param(session, d_cgrp, d_css, cft, fake_sf,
-								fake_kn);
+								fake_kn, fake_of);
 					}
 				} else {
 					if (ss->dfl_cftypes) {
 						cfts = ss->dfl_cftypes;
 						for (cft = cfts; cft->name[0] != '\0'; cft++) {
 							lttng_dump_cgroup_file_param(session, d_cgrp, d_css, cft, fake_sf,
-									fake_kn);
+									fake_kn, fake_of);
 						}
 					}
 					if (ss->legacy_cftypes) {
 						cfts = ss->legacy_cftypes;
 						for (cft = cfts; cft->name[0] != '\0'; cft++) {
 							lttng_dump_cgroup_file_param(session, d_cgrp, d_css, cft, fake_sf,
-									fake_kn);
+									fake_kn, fake_of);
 						}
 					}
 				}
