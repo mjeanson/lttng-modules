@@ -541,11 +541,6 @@ void lttng_dump_cgroup_file_param(struct lttng_session *session,
 
 		printk(KERN_INFO "param %s follows", cft->name);
 
-		sf->from = 0;
-		sf->count = 0;
-		sf->pad_until = 0;
-		sf->index = 0;
-		sf->read_pos = 0;
 		of->kn = cgrp->kn;
 		sf->private = of;
 
@@ -556,12 +551,40 @@ void lttng_dump_cgroup_file_param(struct lttng_session *session,
 		kn->priv = cgrp;
 		cgrp->kn->priv = cft;
 
-		seq_ret = cft->seq_show(sf, NULL);
-		if (seq_ret)
-			printk(KERN_INFO "ERROR: param %s, ret %d", cft->name, seq_ret);
-		else {
-			printk(KERN_INFO "%s", sf->buf);
-			printk(KERN_INFO "----------------");
+		if (cft->seq_start) {
+			void *v;
+			loff_t pos;
+			pos = 0;
+			v = cft->seq_start(sf, &pos);
+			while (v) {
+				sf->from = 0;
+				sf->count = 0;
+				sf->pad_until = 0;
+				sf->index = 0;
+				sf->read_pos = 0;
+				seq_ret = cft->seq_show(sf, v);
+				if (seq_ret)
+					printk(KERN_INFO "ERROR: param %s, ret %d", cft->name, seq_ret);
+				else {
+					printk(KERN_INFO "%s", sf->buf);
+					printk(KERN_INFO "----------------");
+				}
+				v = cft->seq_next(sf, v, &pos);
+			}
+			cft->seq_stop(sf, v);
+		} else {
+			sf->from = 0;
+			sf->count = 0;
+			sf->pad_until = 0;
+			sf->index = 0;
+			sf->read_pos = 0;
+			seq_ret = cft->seq_show(sf, NULL);
+			if (seq_ret)
+				printk(KERN_INFO "ERROR: param %s, ret %d", cft->name, seq_ret);
+			else {
+				printk(KERN_INFO "%s", sf->buf);
+				printk(KERN_INFO "----------------");
+			}
 		}
 
 		/* Let's clean up our mess */
