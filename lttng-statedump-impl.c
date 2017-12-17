@@ -644,19 +644,22 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 				if (ss->dfl_cftypes && ss->dfl_cftypes == ss->legacy_cftypes) {
 					cfts = ss->dfl_cftypes;
 					for (cft = cfts; cft->name[0] != '\0'; cft++) {
-						lttng_dump_cgroup_file_param(session, d_cgrp, cft, fake_sf, fake_kn);
+						lttng_dump_cgroup_file_param(session, d_cgrp, d_css, cft, fake_sf,
+								fake_kn);
 					}
 				} else {
 					if (ss->dfl_cftypes) {
 						cfts = ss->dfl_cftypes;
 						for (cft = cfts; cft->name[0] != '\0'; cft++) {
-							lttng_dump_cgroup_file_param(session, d_cgrp, cft, fake_sf, fake_kn);
+							lttng_dump_cgroup_file_param(session, d_cgrp, d_css, cft, fake_sf,
+									fake_kn);
 						}
 					}
 					if (ss->legacy_cftypes) {
 						cfts = ss->legacy_cftypes;
 						for (cft = cfts; cft->name[0] != '\0'; cft++) {
-							lttng_dump_cgroup_file_param(session, d_cgrp, cft, fake_sf, fake_kn);
+							lttng_dump_cgroup_file_param(session, d_cgrp, d_css, cft, fake_sf,
+									fake_kn);
 						}
 					}
 				}
@@ -667,9 +670,9 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 
 	/* Cleaning */
 	kfree(buf);
-	kfree(of);
-	kfree(kn);
-	kfree(sf);
+	kfree(fake_of);
+	kfree(fake_kn);
+	kfree(fake_sf);
 
 	/* printk(KERN_INFO "LTTng cgroups: Releasing locks...\n");
 	mutex_unlock(&cgroup_mutex);
