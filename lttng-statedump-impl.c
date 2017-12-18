@@ -652,7 +652,7 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 			if (!css)
 				continue;
 			/* Iterate through descendant cgroup subsystems */	
-			/* rcu_read_lock(); */
+			rcu_read_lock();
 			wrapper_css_for_each_descendant_pre(d_css, css) {
 				int ancestor_id;
 				d_cgrp = d_css->cgroup;
@@ -667,30 +667,29 @@ int lttng_enumerate_cgroups_states(struct lttng_session *session)
 							root->hierarchy_id, d_cgrp->id, ancestor_id, d_cgrp->kn->name);
 
 				/* Print css info */
-				if (ss->dfl_cftypes && ss->dfl_cftypes == ss->legacy_cftypes) {
+				if (wrapper_cgroup_on_dfl(d_cgrp)) {
 					cfts = ss->dfl_cftypes;
-					for (cft = cfts; cft->name[0] != '\0'; cft++) {
-						lttng_dump_cgroup_file_param(session, d_cgrp, d_css, cft, fake_sf,
-								fake_kn, fake_of);
-					}
 				} else {
-					if (ss->dfl_cftypes) {
-						cfts = ss->dfl_cftypes;
-						for (cft = cfts; cft->name[0] != '\0'; cft++) {
-							lttng_dump_cgroup_file_param(session, d_cgrp, d_css, cft, fake_sf,
+					cfts = ss->legacy_cftypes;
+				}
+				if (cfts) {
+					for (cft = cfts; cft->name[0] != '\0'; cft++) {
+						/* Skip cftype if flags indicate so */
+						if ((cft->flags & __CFTYPE_ONLY_ON_DFL) && !wrapper_cgroup_on_dfl(d_cgrp))
+							continue;
+						if ((cft->flags & __CFTYPE_NOT_ON_DFL) && wrapper_cgroup_on_dfl(d_cgrp))
+							continue;
+						if ((cft->flags & CFTYPE_NOT_ON_ROOT) && !cgroup_parent(d_cgrp))
+							continue;
+						if ((cft->flags & CFTYPE_ONLY_ON_ROOT) && cgroup_parent(d_cgrp))
+							continue;
+
+						lttng_dump_cgroup_file_param(session, d_cgrp, d_css, cft, fake_sf,
 									fake_kn, fake_of);
-						}
-					}
-					if (ss->legacy_cftypes) {
-						cfts = ss->legacy_cftypes;
-						for (cft = cfts; cft->name[0] != '\0'; cft++) {
-							lttng_dump_cgroup_file_param(session, d_cgrp, d_css, cft, fake_sf,
-									fake_kn, fake_of);
-						}
 					}
 				}
 			}
-			/* rcu_read_unlock(); */
+			rcu_read_unlock();
 		}
 	}
 

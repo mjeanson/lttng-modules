@@ -53,6 +53,20 @@ struct cgroup_subsys_state* wrapper_cgroup_get_e_css(struct cgroup *cgroup,
 }
 
 static inline
+bool wrapper_cgroup_on_dfl(struct cgroup *cgroup)
+{
+	bool (*cgroup_on_dfl_sym)(struct cgroup *cgroup);
+
+	cgroup_on_dfl_sym = (void *) kallsyms_lookup_funcptr("cgroup_on_dfl");
+	if (cgroup_on_dfl_sym) {
+		return cgroup_on_dfl_sym(cgroup);
+	} else {
+		printk_once(KERN_WARNING "LTTng: cgroup_on_dfl symbol lookup failed.\n");
+		return false;
+	}
+}
+
+static inline
 struct cgroup_subsys_state* wrapper_css_next_descendant_pre
 							(struct cgroup_subsys_state *pos,
 						    struct cgroup_subsys_state *css)
@@ -69,6 +83,16 @@ struct cgroup_subsys_state* wrapper_css_next_descendant_pre
 		printk_once(KERN_WARNING "LTTng: css_next_descendant_pre symbol lookup failed.\n");
 		return NULL;
 	}
+}
+
+/* Helper function, (too) recently exposed in include/linux/cgroup.h */
+static inline struct cgroup *cgroup_parent(struct cgroup *cgrp)
+{
+	struct cgroup_subsys_state *parent_css = cgrp->self.parent;
+
+	if (parent_css)
+		return container_of(parent_css, struct cgroup, self);
+	return NULL;
 }
 
 static inline
