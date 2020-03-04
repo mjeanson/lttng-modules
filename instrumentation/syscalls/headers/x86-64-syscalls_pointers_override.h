@@ -155,6 +155,9 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(accept4,
 	TP_code_post()
 )
 
+/*
+ * Override fildes to ctf_user_array()
+ */
 #define OVERRIDE_64_pipe
 SC_LTTNG_TRACEPOINT_EVENT(pipe,
 	TP_PROTO(sc_exit(long ret,) int * fildes),
@@ -165,12 +168,5 @@ SC_LTTNG_TRACEPOINT_EVENT(pipe,
 )
 
 #else	/* CREATE_SYSCALL_TABLE */
-
-#define OVERRIDE_TABLE_64_clone
-TRACE_SYSCALL_TABLE(clone, clone, 56, 5)
-#define OVERRIDE_TABLE_64_execve
-TRACE_SYSCALL_TABLE(execve, execve, 59, 3)
-#define OVERRIDE_TABLE_64_getcpu
-TRACE_SYSCALL_TABLE(getcpu, getcpu, 309, 3)
 
 #endif /* CREATE_SYSCALL_TABLE */
