@@ -139,5 +139,3 @@ TRACE_SYSCALL_TABLE(arm_fadvise64_64, arm_fadvise64_64, 270, 6)
 TRACE_SYSCALL_TABLE(sync_file_range2, sync_file_range2, 341, 6)
 
 #endif /* CREATE_SYSCALL_TABLE */
-
-
