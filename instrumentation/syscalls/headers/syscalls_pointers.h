@@ -12,8 +12,12 @@
 #include "arm-32-syscalls_pointers.h"
 #endif
 
-#ifdef CONFIG_PPC
+#ifdef CONFIG_PPC32
 #include "powerpc-32-syscalls_pointers.h"
+#endif
+
+#ifdef CONFIG_PPC64
+#include "powerpc-64-syscalls_pointers.h"
 #endif
 
 #ifdef CONFIG_CPU_MIPS32
