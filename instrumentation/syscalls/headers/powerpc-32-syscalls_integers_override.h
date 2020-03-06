@@ -63,10 +63,6 @@ SC_LTTNG_TRACEPOINT_EVENT(sync_file_range2,
 
 #else	/* CREATE_SYSCALL_TABLE */
 
-#define OVERRIDE_TABLE_32_mmap
-TRACE_SYSCALL_TABLE(mmap, mmap, 90, 6)
-#define OVERRIDE_TABLE_32_mmap2
-TRACE_SYSCALL_TABLE(mmap2, mmap2, 192, 6)
 #define OVERRIDE_TABLE_32_sync_file_range2
 TRACE_SYSCALL_TABLE(sync_file_range2, sync_file_range2, 308, 6)
 
