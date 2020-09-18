@@ -888,7 +888,7 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 	}
 
 	if (!chan->sys_enter_registered) {
-		ret = lttng_wrapper_tracepoint_probe_register("sys_enter",
+		ret = lttng_tracepoint_probe_register_maysleep("sys_enter",
 				(void *) syscall_entry_probe, chan);
 		if (ret)
 			return ret;
@@ -899,7 +899,7 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 	 * conflict with sys_exit syscall entry.
 	 */
 	if (!chan->sys_exit_registered) {
-		ret = lttng_wrapper_tracepoint_probe_register("sys_exit",
+		ret = lttng_tracepoint_probe_register_maysleep("sys_exit",
 				(void *) syscall_exit_probe, chan);
 		if (ret) {
 			WARN_ON_ONCE(lttng_wrapper_tracepoint_probe_unregister("sys_enter",

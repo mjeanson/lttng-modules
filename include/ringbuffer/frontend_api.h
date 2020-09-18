@@ -227,6 +227,14 @@ void lib_ring_buffer_switch(const struct lib_ring_buffer_config *config,
  * Atomic unordered slot commit. Increments the commit count in the
  * specified sub-buffer, and delivers it if necessary.
  */
+
+// est-ce que mon smp processor id est == a ctx->cpu ?
+//  appeler le fonction actuelle
+// sinon
+//  c'est ben triste, faire un IPI pour faire le commit sur le bon cpu
+//  et appeler la fonction actuelle.
+//
+//  Qu'est-ce qui se passe si le CPU se fait unplug apres le reserve mais avant le commit?
 static inline
 void lib_ring_buffer_commit(const struct lib_ring_buffer_config *config,
 			    const struct lib_ring_buffer_ctx *ctx)

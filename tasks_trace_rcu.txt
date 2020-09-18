@@ -1,0 +1,6 @@
+lttng_dynamic_len_stack?
+checker les DEFINE_PER_CPU
+
+lib_ring_buffer_nesting juste un safety net
+
+Investiguez mempool pour remplacer les PER_CPU

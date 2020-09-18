@@ -160,7 +160,8 @@ void remove_tracepoint(struct tracepoint_entry *e)
 	kfree(e);
 }
 
-int lttng_tracepoint_probe_register(const char *name, void *probe, void *data)
+static
+int __lttng_tracepoint_probe_register(const char *name, void *probe, void *data, bool maysleep)
 {
 	struct tracepoint_entry *e;
 	int ret = 0;
@@ -180,13 +181,27 @@ int lttng_tracepoint_probe_register(const char *name, void *probe, void *data)
 		goto end;
 	e->refcount++;
 	if (e->tp) {
-		ret = tracepoint_probe_register(e->tp, probe, data);
+		if (maysleep)
+			ret = tracepoint_probe_register_maysleep(e->tp, probe, data);
+		else
+			ret = tracepoint_probe_register(e->tp, probe, data);
+
 		WARN_ON_ONCE(ret);
 		ret = 0;
 	}
 end:
 	mutex_unlock(&lttng_tracepoint_mutex);
 	return ret;
+}
+
+int lttng_tracepoint_probe_register(const char *name, void *probe, void *data)
+{
+	return __lttng_tracepoint_probe_register(name, probe, data, false);
+}
+
+int lttng_tracepoint_probe_register_maysleep(const char *name, void *probe, void *data)
+{
+	return __lttng_tracepoint_probe_register(name, probe, data, true);
 }
 
 int lttng_tracepoint_probe_unregister(const char *name, void *probe, void *data)

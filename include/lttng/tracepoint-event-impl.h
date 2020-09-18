@@ -1125,6 +1125,9 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
  * 2*sizeof(unsigned long) for all supported architectures.
  * Perform UNION (||) of filter runtime list.
  */
+
+//renommer la fonction actuelle pis la wrapper dans un autre static qui desactive / reacti
+
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
 #define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
 static void __event_probe__##_name(void *__data, _proto)		      \
@@ -1150,6 +1153,8 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	struct probe_local_vars *tp_locvar __attribute__((unused)) =	      \
 			&__tp_locvar;					      \
 	struct lttng_id_tracker_rcu *__lf;				      \
+									      \
+	/* desctiver la preemption */					      \
 									      \
 	if (!_TP_SESSION_CHECK(session, __session))			      \
 		return;							      \
@@ -1246,8 +1251,10 @@ static void __event_probe__##_name(void *__data)			      \
 			&__tp_locvar;					      \
 	struct lttng_id_tracker_rcu *__lf;				      \
 									      \
+	/* desactiver le preemption? */					      \
+									      \
 	if (!_TP_SESSION_CHECK(session, __session))			      \
-		return;							      \
+		return;	goto end;						      \
 	if (unlikely(!LTTNG_READ_ONCE(__session->active)))		      \
 		return;							      \
 	if (unlikely(!LTTNG_READ_ONCE(__chan->enabled)))		      \
@@ -1303,11 +1310,15 @@ static void __event_probe__##_name(void *__data)			      \
 	__event_align = __event_get_align__##_name(tp_locvar);		      \
 	lib_ring_buffer_ctx_init(&__ctx, __chan->chan, &__lttng_probe_ctx, __event_len,  \
 				 __event_align, -1);			      \
+	/* disable preempt */						      \
 	__ret = __chan->ops->event_reserve(&__ctx, __event->id);	      \
+	/* enable preempt */						      \
 	if (__ret < 0)							      \
 		goto __post;						      \
 	_fields								      \
+	/* disable preempt */						      \
 	__chan->ops->event_commit(&__ctx);				      \
+	/* enable preempt */						      \
 __post:									      \
 	_code_post							      \
 	barrier();	/* use before un-reserve. */			      \
