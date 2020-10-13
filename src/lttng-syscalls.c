@@ -681,6 +681,16 @@ void syscall_exit_event_probe(void *__data, struct pt_regs *regs, long ret)
 	}
 }
 
+static
+bool copy_kernel_sym_name(char *dest, const char *src)
+{
+	if (strnlen(src, LTTNG_KERNEL_SYM_NAME_LEN) >= LTTNG_KERNEL_SYM_NAME_LEN)
+		return false;
+
+	strcpy(dest, src);
+	return true;
+}
+
 /*
  * noinline to diminish caller stack size.
  * Should be called with sessions lock held.
@@ -727,8 +737,11 @@ int fill_event_table(const struct trace_syscall_entry *table, size_t table_len,
 			ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_COMPAT;
 			break;
 		}
-		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN - 1);
-		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
+		if (!copy_kernel_sym_name(ev.name, desc->name)) {
+			printk(KERN_ERR "LTTng: syscall name too long: %s", desc->name);
+			// FIXME: Not sure this is the right way to error out.
+			return PTR_ERR(chan_table[i]);
+		}
 		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
 		chan_table[i] = _lttng_event_create(chan, &ev, filter,
 						desc, ev.instrumentation);
@@ -794,8 +807,11 @@ int lttng_syscalls_register_event(struct lttng_channel *chan, void *filter)
 			&__event_desc___syscall_entry_unknown;
 
 		memset(&ev, 0, sizeof(ev));
-		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
-		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
+		if (!copy_kernel_sym_name(ev.name, desc->name)) {
+			printk(KERN_ERR "LTTng: syscall name too long: %s", desc->name);
+			// FIXME: Not sure this is the right way to error out.
+			return PTR_ERR(chan->sc_unknown);
+		}
 		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_ENTRY;
 		ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_NATIVE;
@@ -813,8 +829,11 @@ int lttng_syscalls_register_event(struct lttng_channel *chan, void *filter)
 			&__event_desc___compat_syscall_entry_unknown;
 
 		memset(&ev, 0, sizeof(ev));
-		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
-		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
+		if (!copy_kernel_sym_name(ev.name, desc->name)) {
+			printk(KERN_ERR "LTTng: syscall name too long: %s", desc->name);
+			// FIXME: Not sure this is the right way to error out.
+			return PTR_ERR(chan->sc_compat_unknown);
+		}
 		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_ENTRY;
 		ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_COMPAT;
@@ -832,8 +851,11 @@ int lttng_syscalls_register_event(struct lttng_channel *chan, void *filter)
 			&__event_desc___compat_syscall_exit_unknown;
 
 		memset(&ev, 0, sizeof(ev));
-		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
-		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
+		if (!copy_kernel_sym_name(ev.name, desc->name)) {
+			printk(KERN_ERR "LTTng: syscall name too long: %s", desc->name);
+			// FIXME: Not sure this is the right way to error out.
+			return PTR_ERR(chan->compat_sc_exit_unknown);
+		}
 		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_EXIT;
 		ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_COMPAT;
@@ -851,8 +873,11 @@ int lttng_syscalls_register_event(struct lttng_channel *chan, void *filter)
 			&__event_desc___syscall_exit_unknown;
 
 		memset(&ev, 0, sizeof(ev));
-		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
-		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
+		if (!copy_kernel_sym_name(ev.name, desc->name)) {
+			printk(KERN_ERR "LTTng: syscall name too long: %s", desc->name);
+			// FIXME: Not sure this is the right way to error out.
+			return PTR_ERR(chan->sc_exit_unknown);
+		}
 		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_EXIT;
 		ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_NATIVE;
