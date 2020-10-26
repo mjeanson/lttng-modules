@@ -29,6 +29,8 @@ struct ext4_extent;
 #define TP_MODE_T	umode_t
 #endif
 
+// Missing ext4_other_inode_update_time
+
 LTTNG_TRACEPOINT_EVENT(ext4_free_inode,
 	TP_PROTO(struct inode *inode),
 
@@ -97,6 +99,8 @@ LTTNG_TRACEPOINT_EVENT(ext4_drop_inode,
 		ctf_integer(int, drop, drop)
 	)
 )
+
+// ext4_nfs_commit_metadata
 
 LTTNG_TRACEPOINT_EVENT(ext4_mark_inode_dirty,
 	TP_PROTO(struct inode *inode, unsigned long IP),
@@ -169,6 +173,10 @@ LTTNG_TRACEPOINT_EVENT_CLASS(ext4__write_end,
 	)
 )
 
+// ext4_write_end,
+// ext4_journalled_write_end,
+// ext4_da_write_end,
+
 LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__write_end, ext4_ordered_write_end,
 
 	TP_PROTO(struct inode *inode, loff_t pos, unsigned int len,
@@ -201,6 +209,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__write_end, ext4_da_write_end,
 	TP_ARGS(inode, pos, len, copied)
 )
 
+// ext4_writepages,
+
+// existe plus?
 LTTNG_TRACEPOINT_EVENT(ext4_da_writepages,
 	TP_PROTO(struct inode *inode, struct writeback_control *wbc),
 
@@ -276,6 +287,8 @@ LTTNG_TRACEPOINT_EVENT(ext4_da_write_pages_extent,
 )
 
 #endif
+
+// ext4_writepages_result,
 
 LTTNG_TRACEPOINT_EVENT(ext4_da_writepages_result,
 	TP_PROTO(struct inode *inode, struct writeback_control *wbc,
@@ -1039,6 +1052,8 @@ LTTNG_TRACEPOINT_EVENT(ext4_punch_hole,
 
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
 
+// ext4_fallocate_exit,
+
 LTTNG_TRACEPOINT_EVENT(ext4_unlink_enter,
 	TP_PROTO(struct inode *parent, struct dentry *dentry),
 
@@ -1369,6 +1384,7 @@ LTTNG_TRACEPOINT_EVENT(ext4_journal_start,
 	)
 )
 
+// Move out of ifdef?
 LTTNG_TRACEPOINT_EVENT_CLASS(ext4__trim,
 	TP_PROTO(struct super_block *sb,
 		 ext4_group_t group,
@@ -1406,6 +1422,8 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__trim, ext4_trim_all_free,
 	TP_ARGS(sb, group, start, len)
 )
 #endif
+
+// ext4_ext_handle_unwritten_extents,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
 
@@ -1908,6 +1926,32 @@ LTTNG_TRACEPOINT_EVENT(ext4_es_shrink_exit,
 
 #endif
 
+// ext4_es_remove_extent,
+// ext4_es_find_extent_range_enter,
+// ext4_es_find_extent_range_exit,
+// ext4_es_lookup_extent_enter,
+// ext4_es_lookup_extent_exit,
+// ext4__es_shrink_enter,
+//   ext4_es_shrink_count,
+//   ext4_es_shrink_scan_enter,
+// ext4_es_shrink_scan_exit,
+// ext4_collapse_range,
+// ext4_insert_range,
+// ext4_es_shrink,
+// ext4_es_insert_delayed_block,
+// ext4_fsmap_class,
+//   ext4_fsmap_low_key
+//   ext4_fsmap_high_key
+//   ext4_fsmap_mapping
+// ext4_getfsmap_class,
+//   ext4_getfsmap_low_key
+//   ext4_getfsmap_high_key
+//   ext4_getfsmap_mapping
+// ext4_shutdown,
+// ext4_error,
+// ext4_prefetch_bitmaps,
+// ext4_lazy_itable_init,
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0))
 LTTNG_TRACEPOINT_EVENT(ext4_fc_replay_scan,
 	TP_PROTO(struct super_block *sb, int error, int off),
@@ -1935,6 +1979,15 @@ LTTNG_TRACEPOINT_EVENT(ext4_fc_replay,
 	)
 )
 #endif
+
+// ext4_fc_commit_start,
+// ext4_fc_commit_stop,
+// ext4_fc_stats,
+// ext4_fc_track_create
+// ext4_fc_track_link
+// ext4_fc_track_unlink
+// ext4_fc_track_inode,
+// ext4_fc_track_range,
 
 #endif /* LTTNG_TRACE_EXT4_H */
 
